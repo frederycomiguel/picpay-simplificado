@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: picpay-simplificado
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/picpay
+    username: picpay
+    password: picpay123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: picpay
+    password: picpay123
+
+# External services (mocked)
+picpay:
+  services:
+    authorization-url: https://util.devi.tools/api/v2/authorize
+    notification-url: https://util.devi.tools/api/v1/notify
+
+# Swagger UI
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+server:
+  port: 8080
