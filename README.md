@@ -22,38 +22,57 @@ O objetivo é criar uma API que permita depositar e transferir dinheiro entre us
 - **Autorização externa** obrigatória antes de completar a transferência
 - **Notificação assíncrona** via RabbitMQ após transferência bem-sucedida
 
-## 🏗️ Arquitetura
+## 🏛️ Padrões de Arquitetura & Design
+
+O projeto adota uma combinação de **Arquitetura em Camadas (Layered Architecture)** com **Arquitetura Orientada a Eventos (Event-Driven Architecture - EDA)** para garantir alta coesão, baixo acoplamento e resiliência:
+
+### 1. Arquitetura em Camadas (Layered / N-Tier Architecture)
+* **Controller Layer (`controller`)**: Porta de entrada da API REST. Responsável pelo recebimento das requisições HTTP, validação sintática dos dados com *Jakarta Bean Validation* e retorno com status codes HTTP adequados.
+* **Service Layer (`service`)**: Núcleo da aplicação contendo todas as regras de negócio core, orquestração de transações atômicas (*ACID*) via `@Transactional`, consulta a autorizadores externos e publicação de eventos.
+* **Repository Layer (`domain.*.repository`)**: Abstração de persistência sobre o PostgreSQL utilizando *Spring Data JPA* e *Hibernate*.
+* **Infrastructure Layer (`infra`)**: Configurações de mensageria RabbitMQ, clientes HTTP resilientes (*RestClient*), tratamento global de exceções (*@RestControllerAdvice*) e consumidores de eventos.
+
+### 2. Event-Driven Architecture (EDA) & Mensageria Assíncrona
+* **Desacoplamento de I/O**: Notificações por e-mail/push têm latência e falhas imprevisíveis. O envio é publicado como evento no RabbitMQ (`notification.exchange` ➔ `notification.queue`), liberando a resposta da transferência imediatamente ao cliente.
+* **Resiliência e DLQ (Dead Letter Queue)**: Mensagens que falham após tentativas automáticas de retry são roteadas para uma `notification.dlq` (Dead Letter Queue), evitando perda de dados e permitindo reprocessamento posterior.
+
+### 3. Design Patterns Utilizados
+* **DTO Pattern (Data Transfer Object)**: Implementado com **Java Records** nativos para garantir imutabilidade dos dados trafegados.
+* **Controller Advice Pattern**: Centralização do tratamento de erros em um único ponto com mapeamento de status codes RFC 7807.
+* **Builder Pattern**: Utilizado via Lombok para instanciação fluente e segura de entidades complexas.
+* **Repository Pattern**: Separação clara entre a lógica de negócio e o acesso ao banco de dados relacional.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Spring Boot App                   │
-│                                                      │
-│  ┌──────────┐  ┌───────────────┐  ┌───────────────┐ │
-│  │Controller│──│   Service     │──│  Repository   │ │
-│  │  Layer   │  │   Layer       │  │   Layer       │ │
-│  └──────────┘  └───┬───────┬───┘  └───────┬───────┘ │
-│                    │       │              │          │
-│           ┌────────┘       └────────┐     │          │
-│           ▼                         ▼     ▼          │
-│  ┌─────────────────┐  ┌──────────────────────────┐  │
-│  │  Authorization   │  │      RabbitMQ Publisher  │  │
-│  │  Service (HTTP)  │  │                          │  │
-│  └────────┬─────────┘  └────────────┬─────────────┘  │
-└───────────┼─────────────────────────┼────────────────┘
-            │                         │
-            ▼                         ▼
-   ┌─────────────────┐     ┌──────────────────┐
-   │  Autorizador     │     │    RabbitMQ       │
-   │  Externo (Mock)  │     │  ┌────────────┐  │
-   │                  │     │  │ Notification│  │
-   └──────────────────┘     │  │   Consumer  │──┼──► Notification
-                            │  └────────────┘  │     Service (Mock)
-                            └──────────────────┘
-                                    │
-                            ┌───────▼────────┐
-                            │  PostgreSQL    │
-                            │  (Docker)      │
-                            └────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       ARQUITETURA DO SISTEMA                                │
+│                                                                             │
+│  [ HTTP Client / Frontend ]                                                 │
+│             │                                                               │
+│             ▼                                                               │
+│  ┌───────────────────────┐                                                  │
+│  │ Controller Layer      │ ➔ Validação DTO (@Valid) & Swagger OpenAPI       │
+│  └──────────┬────────────┘                                                  │
+│             ▼                                                               │
+│  ┌───────────────────────┐   [ Serviço Autorizador Externo (HTTP Mock) ]   │
+│  │ Service Layer         │ ◀─────────────────────────────────────────      │
+│  │  - Transaction ACID   │                                                  │
+│  │  - Regras de Negócio  │ ───► [ PostgreSQL 16 (JPA / Hibernate) ]         │
+│  └──────────┬────────────┘                                                  │
+│             │ (Publica evento de sucesso)                                   │
+│             ▼                                                               │
+│  ┌───────────────────────────────────────────────────────────────┐          │
+│  │ RabbitMQ Broker (notification.exchange ➔ notification.queue)  │          │
+│  └──────────────────────────────┬────────────────────────────────┘          │
+│                                 ▼                                           │
+│  ┌───────────────────────────────────────────────────────────────┐          │
+│  │ Notification Consumer (Background Worker)                     │          │
+│  └──────────────────────────────┬────────────────────────────────┘          │
+│                                 ▼                                           │
+│             [ Serviço de Notificação Externo (HTTP Mock) ]                  │
+│                                 │ (Em caso de falha persistente)            │
+│                                 ▼                                           │
+│                     [ Dead Letter Queue (DLQ) ]                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## 🛠️ Tecnologias
