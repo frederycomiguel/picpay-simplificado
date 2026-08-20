@@ -25,6 +25,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Suite de Testes Unitários para a classe {@link UserService}.
+ * <p>
+ * Valida o ciclo de vida do cadastro e consulta de usuários:
+ * <ul>
+ *   <li>Criação bem-sucedida de usuários comuns e lojistas.</li>
+ *   <li>Bloqueio de cadastro com CPF/CNPJ duplicado.</li>
+ *   <li>Bloqueio de cadastro com e-mail duplicado.</li>
+ *   <li>Consulta por ID e tratamento de {@link EntityNotFoundException}.</li>
+ *   <li>Listagem de todos os usuários com conversão para DTOs.</li>
+ * </ul>
+ */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService Unit Tests")
 class UserServiceTest {
@@ -56,6 +68,12 @@ class UserServiceTest {
     @DisplayName("Create User Tests")
     class CreateUserTests {
 
+        /**
+         * [Cenário de Sucesso]
+         * <p>
+         * Valida que um usuário é cadastrado com sucesso quando os dados são válidos
+         * e não há colisão de documento nem de e-mail.
+         */
         @Test
         @DisplayName("Should create user successfully when data is valid")
         void shouldCreateUserSuccessfully() {
@@ -78,6 +96,11 @@ class UserServiceTest {
             verify(userRepository).save(any(User.class));
         }
 
+        /**
+         * [Regra de Unicidade: CPF/CNPJ]
+         * <p>
+         * Deve impedir o cadastro e lançar IllegalArgumentException quando o documento já existe.
+         */
         @Test
         @DisplayName("Should throw IllegalArgumentException when document already exists")
         void shouldThrowExceptionWhenDocumentExists() {
@@ -95,6 +118,11 @@ class UserServiceTest {
             verify(userRepository, never()).save(any());
         }
 
+        /**
+         * [Regra de Unicidade: E-mail]
+         * <p>
+         * Deve impedir o cadastro e lançar IllegalArgumentException quando o e-mail já existe.
+         */
         @Test
         @DisplayName("Should throw IllegalArgumentException when email already exists")
         void shouldThrowExceptionWhenEmailExists() {
@@ -118,6 +146,11 @@ class UserServiceTest {
     @DisplayName("Find User Tests")
     class FindUserTests {
 
+        /**
+         * [Consulta por ID com sucesso]
+         * <p>
+         * Valida que o usuário é retornado corretamente quando encontrado no banco de dados.
+         */
         @Test
         @DisplayName("Should return user when ID exists")
         void shouldReturnUserWhenFound() {
@@ -129,6 +162,11 @@ class UserServiceTest {
             assertThat(result.getId()).isEqualTo(1L);
         }
 
+        /**
+         * [Tratamento de 404 / Não Encontrado]
+         * <p>
+         * Deve lançar EntityNotFoundException quando o ID pesquisado não existir.
+         */
         @Test
         @DisplayName("Should throw EntityNotFoundException when user is not found")
         void shouldThrowExceptionWhenUserNotFound() {
@@ -139,6 +177,11 @@ class UserServiceTest {
                     .hasMessageContaining("Usuário não encontrado com ID: 99");
         }
 
+        /**
+         * [Listagem de Usuários]
+         * <p>
+         * Valida que todos os usuários são listados e convertidos para o DTO UserResponse.
+         */
         @Test
         @DisplayName("Should return list of all users")
         void shouldReturnAllUsers() {
