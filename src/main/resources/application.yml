@@ -3,7 +3,7 @@ spring:
     name: picpay-simplificado
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/picpay
+    url: jdbc:postgresql://localhost:5433/picpay
     username: picpay
     password: picpay123
     driver-class-name: org.postgresql.Driver
@@ -15,7 +15,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   rabbitmq:
     host: localhost
