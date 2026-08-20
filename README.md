@@ -81,7 +81,7 @@ O objetivo é criar uma API que permita depositar e transferir dinheiro entre us
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/picpay-simplificado.git
+git clone https://github.com/frederycomiguel/picpay-simplificado.git
 cd picpay-simplificado
 ```
 
