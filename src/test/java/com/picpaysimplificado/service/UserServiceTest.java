@@ -26,16 +26,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Suite de Testes Unitários para a classe {@link UserService}.
- * <p>
- * Valida o ciclo de vida do cadastro e consulta de usuários:
- * <ul>
- *   <li>Criação bem-sucedida de usuários comuns e lojistas.</li>
- *   <li>Bloqueio de cadastro com CPF/CNPJ duplicado.</li>
- *   <li>Bloqueio de cadastro com e-mail duplicado.</li>
- *   <li>Consulta por ID e tratamento de {@link EntityNotFoundException}.</li>
- *   <li>Listagem de todos os usuários com conversão para DTOs.</li>
- * </ul>
+ * [PT-BR] Suite de Testes Unitários para a classe {@link UserService}.
+ *         Valida o ciclo de vida do cadastro e consulta de usuários:
+ *         - Criação bem-sucedida de usuários comuns e lojistas.
+ *         - Bloqueio de cadastro com CPF/CNPJ duplicado.
+ *         - Bloqueio de cadastro com e-mail duplicado.
+ *         - Consulta por ID e tratamento de {@link EntityNotFoundException}.
+ *         - Listagem de todos os usuários com conversão para DTOs.
+ *
+ * [EN]    Unit Test Suite for {@link UserService}.
+ *         Validates user lifecycle and queries:
+ *         - Successful creation of common and merchant users.
+ *         - Duplicate document (CPF/CNPJ) validation.
+ *         - Duplicate email validation.
+ *         - Query by ID and handling of {@link EntityNotFoundException}.
+ *         - List all users mapped to response DTOs.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService Unit Tests")
@@ -69,10 +74,8 @@ class UserServiceTest {
     class CreateUserTests {
 
         /**
-         * [Cenário de Sucesso]
-         * <p>
-         * Valida que um usuário é cadastrado com sucesso quando os dados são válidos
-         * e não há colisão de documento nem de e-mail.
+         * [PT-BR] [Cenário de Sucesso] Criação de usuário com dados válidos e sem duplicidade.
+         * [EN]    [Happy Path] User creation with valid data and no uniqueness collisions.
          */
         @Test
         @DisplayName("Should create user successfully when data is valid")
@@ -97,9 +100,8 @@ class UserServiceTest {
         }
 
         /**
-         * [Regra de Unicidade: CPF/CNPJ]
-         * <p>
-         * Deve impedir o cadastro e lançar IllegalArgumentException quando o documento já existe.
+         * [PT-BR] Regra de Unicidade: CPF/CNPJ. Deve lançar IllegalArgumentException se já existir.
+         * [EN]    Uniqueness Rule: CPF/CNPJ. Must throw IllegalArgumentException if document already exists.
          */
         @Test
         @DisplayName("Should throw IllegalArgumentException when document already exists")
@@ -119,9 +121,8 @@ class UserServiceTest {
         }
 
         /**
-         * [Regra de Unicidade: E-mail]
-         * <p>
-         * Deve impedir o cadastro e lançar IllegalArgumentException quando o e-mail já existe.
+         * [PT-BR] Regra de Unicidade: E-mail. Deve lançar IllegalArgumentException se já existir.
+         * [EN]    Uniqueness Rule: Email. Must throw IllegalArgumentException if email already exists.
          */
         @Test
         @DisplayName("Should throw IllegalArgumentException when email already exists")
@@ -147,9 +148,8 @@ class UserServiceTest {
     class FindUserTests {
 
         /**
-         * [Consulta por ID com sucesso]
-         * <p>
-         * Valida que o usuário é retornado corretamente quando encontrado no banco de dados.
+         * [PT-BR] Busca por ID com sucesso quando o registro existe no banco.
+         * [EN]    Find by ID success when record exists in database.
          */
         @Test
         @DisplayName("Should return user when ID exists")
@@ -163,9 +163,8 @@ class UserServiceTest {
         }
 
         /**
-         * [Tratamento de 404 / Não Encontrado]
-         * <p>
-         * Deve lançar EntityNotFoundException quando o ID pesquisado não existir.
+         * [PT-BR] Tratamento de 404: Lança EntityNotFoundException quando ID não existe.
+         * [EN]    404 Handling: Throws EntityNotFoundException when ID does not exist.
          */
         @Test
         @DisplayName("Should throw EntityNotFoundException when user is not found")
@@ -178,9 +177,8 @@ class UserServiceTest {
         }
 
         /**
-         * [Listagem de Usuários]
-         * <p>
-         * Valida que todos os usuários são listados e convertidos para o DTO UserResponse.
+         * [PT-BR] Listagem geral de usuários convertidos para UserResponse DTO.
+         * [EN]    General listing of users converted to UserResponse DTO.
          */
         @Test
         @DisplayName("Should return list of all users")

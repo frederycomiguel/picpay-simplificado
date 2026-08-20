@@ -31,17 +31,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Suite de Testes Unitários para a classe {@link TransactionService}.
- * <p>
- * Valida todas as regras de negócio core do desafio PicPay Simplificado:
- * <ul>
- *   <li>Transferência bem-sucedida entre usuário comum e lojista com débito/crédito atômico.</li>
- *   <li>Bloqueio de transferências originadas por Lojistas (apenas recebem).</li>
- *   <li>Bloqueio de transferências para si mesmo (pagador == recebedor).</li>
- *   <li>Validação de saldo insuficiente antes de qualquer operação de escrita.</li>
- *   <li>Integração com serviço autorizador externo via HTTP.</li>
- *   <li>Resiliência de mensageria RabbitMQ (falha no broker não deve cancelar a transferência).</li>
- * </ul>
+ * [PT-BR] Suite de Testes Unitários para a classe {@link TransactionService}.
+ *         Valida todas as regras de negócio core do desafio PicPay Simplificado:
+ *         - Transferência bem-sucedida entre usuário comum e lojista com débito/crédito atômico.
+ *         - Bloqueio de transferências originadas por Lojistas (apenas recebem).
+ *         - Bloqueio de transferências para si mesmo (pagador == recebedor).
+ *         - Validação de saldo insuficiente antes de qualquer operação de escrita.
+ *         - Integração com serviço autorizador externo via HTTP.
+ *         - Resiliência de mensageria RabbitMQ (falha no broker não deve cancelar a transferência).
+ *
+ * [EN]    Unit Test Suite for {@link TransactionService}.
+ *         Validates all core business rules of the PicPay Simplificado challenge:
+ *         - Successful transfer between common user and merchant with atomic debit/credit.
+ *         - Merchant transfer restriction (merchants only receive).
+ *         - Self-transfer restriction (payer == payee).
+ *         - Insufficient balance validation before state changes.
+ *         - External HTTP authorization integration.
+ *         - RabbitMQ messaging resilience (broker failure must not roll back completed transfer).
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TransactionService Unit Tests")
@@ -107,17 +113,23 @@ class TransactionServiceTest {
     class ExecuteTransferTests {
 
         /**
-         * [Cenário de Sucesso / Happy Path]
-         * <p>
-         * Regra de Negócio:
-         * Um usuário COMUM com saldo suficiente pode transferir dinheiro para um LOJISTA ou outro usuário.
-         * <p>
-         * Verificações:
-         * 1. Saldo do pagador é debitado corretamente (1000.00 -> 900.00).
-         * 2. Saldo do recebedor é creditado corretamente (500.00 -> 600.00).
-         * 3. Serviço autorizador externo é consultado.
-         * 4. Transação é persistida com status COMPLETED.
-         * 5. Evento de notificação assíncrona é publicado na fila RabbitMQ.
+         * [PT-BR] [Cenário de Sucesso / Happy Path]
+         *         Regra: Usuário COMUM com saldo suficiente transfere para LOJISTA.
+         *         Verificações:
+         *         1. Saldo do pagador é debitado (1000.00 -> 900.00).
+         *         2. Saldo do recebedor é creditado (500.00 -> 600.00).
+         *         3. Autorizador externo é consultado.
+         *         4. Transação é persistida como COMPLETED.
+         *         5. Notificação assíncrona é publicada no RabbitMQ.
+         *
+         * [EN]    [Happy Path Scenario]
+         *         Rule: COMMON user with sufficient balance transfers to MERCHANT.
+         *         Verifications:
+         *         1. Payer balance is debited (1000.00 -> 900.00).
+         *         2. Payee balance is credited (500.00 -> 600.00).
+         *         3. External authorizer is called.
+         *         4. Transaction is saved with status COMPLETED.
+         *         5. Async notification is published to RabbitMQ.
          */
         @Test
         @DisplayName("Should successfully execute transfer from COMMON user to MERCHANT")
@@ -164,11 +176,11 @@ class TransactionServiceTest {
         }
 
         /**
-         * [Regra de Negócio: Lojista não envia dinheiro]
-         * <p>
-         * Lojistas (MERCHANT) só podem receber transferências, nunca enviar.
-         * O sistema deve abortar imediatamente lançando TransactionNotAllowedException
-         * sem debitar saldos nem consultar serviços externos.
+         * [PT-BR] Regra de Negócio: Lojistas só podem receber transferências, nunca enviar.
+         *         Deve lançar TransactionNotAllowedException sem alterar saldos nem consultar autorizador.
+         *
+         * [EN]    Business Rule: Merchants can only receive money, never send.
+         *         Must throw TransactionNotAllowedException without modifying balances or calling authorizer.
          */
         @Test
         @DisplayName("Should throw TransactionNotAllowedException when payer is a MERCHANT")
@@ -199,10 +211,11 @@ class TransactionServiceTest {
         }
 
         /**
-         * [Regra de Negócio: Auto-transferência não permitida]
-         * <p>
-         * Um usuário não pode realizar uma transferência para a própria conta (payer.id == payee.id).
-         * Deve lançar TransactionNotAllowedException.
+         * [PT-BR] Regra de Negócio: Pagador não pode transferir dinheiro para si mesmo (payer.id == payee.id).
+         *         Deve lançar TransactionNotAllowedException.
+         *
+         * [EN]    Business Rule: Payer cannot transfer money to themselves (payer.id == payee.id).
+         *         Must throw TransactionNotAllowedException.
          */
         @Test
         @DisplayName("Should throw TransactionNotAllowedException when payer transfers to self")
@@ -222,10 +235,11 @@ class TransactionServiceTest {
         }
 
         /**
-         * [Regra de Negócio: Validação de Saldo Suficiente]
-         * <p>
-         * O saldo do pagador deve ser maior ou igual ao valor da transferência.
-         * Caso contrário, InsufficientBalanceException é lançada com mensagem explicativa.
+         * [PT-BR] Regra de Negócio: Pagador deve ter saldo suficiente (balance >= value).
+         *         Caso contrário, lança InsufficientBalanceException sem consultar o autorizador.
+         *
+         * [EN]    Business Rule: Payer must have sufficient balance (balance >= value).
+         *         Otherwise, throws InsufficientBalanceException without calling external authorizer.
          */
         @Test
         @DisplayName("Should throw InsufficientBalanceException when payer does not have enough balance")
@@ -246,11 +260,11 @@ class TransactionServiceTest {
         }
 
         /**
-         * [Regra de Negócio: Consulta ao Serviço Autorizador Externo]
-         * <p>
-         * Antes de efetivar a transação, o sistema consulta um autorizador externo via HTTP.
-         * Se o serviço recusar a transação, lança UnauthorizedTransactionException
-         * e nenhum saldo é modificado (rollback automático).
+         * [PT-BR] Regra de Negócio: Autorização externa obrigatória antes de completar a transferência.
+         *         Se o autorizador recusar, lança UnauthorizedTransactionException e reverte tudo.
+         *
+         * [EN]    Business Rule: External authorization required before executing transfer.
+         *         If authorizer denies, throws UnauthorizedTransactionException and rolls back state.
          */
         @Test
         @DisplayName("Should throw UnauthorizedTransactionException when authorizer denies transfer")
@@ -274,11 +288,13 @@ class TransactionServiceTest {
         }
 
         /**
-         * [Regra de Negócio: Resiliência de Mensageria Assíncrona]
-         * <p>
-         * Se a mensageria RabbitMQ falhar ao enfileirar o evento de notificação,
-         * a transferência financeira JÁ PERSISTIDA no banco não deve sofrer rollback.
-         * O fluxo principal conclui com sucesso e loga a falha de notificação.
+         * [PT-BR] Regra de Negócio: Desacoplamento e Resiliência da Mensageria RabbitMQ.
+         *         Se houver falha ao publicar a notificação na fila, a transferência bancária
+         *         já consolidada NÃO deve sofrer rollback.
+         *
+         * [EN]    Business Rule: RabbitMQ Messaging Decoupling and Resilience.
+         *         If publishing notification to the queue fails, the completed transfer
+         *         MUST NOT be rolled back.
          */
         @Test
         @DisplayName("Should succeed even if async notification dispatch fails")
@@ -320,10 +336,8 @@ class TransactionServiceTest {
     class GetAllTransactionsTests {
 
         /**
-         * [Histórico de Transações]
-         * <p>
-         * Valida que a listagem de auditoria de transações busca todas as entidades
-         * persistidas e as mapeia corretamente para TransferResponse DTO.
+         * [PT-BR] Histórico de Transações: Valida listagem de auditoria e conversão para DTOs.
+         * [EN]    Transaction History: Validates audit listing and DTO mapping.
          */
         @Test
         @DisplayName("Should return list of all transactions")
