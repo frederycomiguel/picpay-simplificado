@@ -21,6 +21,15 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
+    /**
+     * [PT-BR] Endpoint para realizar uma transferência financeira entre dois usuários.
+     *         Valida saldo, tipo de usuário (lojista não envia), consulta serviço autorizador e envia notificação assíncrona.
+     * [EN]    Endpoint to perform a money transfer between two users.
+     *         Validates balance, user type (merchants cannot send), queries external authorizer, and sends async notification.
+     *
+     * @param request Dados da transferência / Transfer request data (value, payer, payee)
+     * @return Detalhes da transação concluída / Completed transaction details
+     */
     @PostMapping("/transfer")
     @Operation(summary = "Realizar transferência",
             description = "Transfere dinheiro de um usuário comum para outro usuário (comum ou lojista)")
@@ -35,6 +44,12 @@ public class TransactionController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * [PT-BR] Endpoint para listar todas as transações realizadas no sistema.
+     * [EN]    Endpoint to list all transactions executed in the system.
+     *
+     * @return Lista de transações / List of transactions
+     */
     @GetMapping("/transactions")
     @Operation(summary = "Listar transações", description = "Lista todas as transações realizadas")
     public ResponseEntity<List<TransferResponse>> getAllTransactions() {

@@ -16,6 +16,13 @@ public class AuthorizationService {
     private final RestClient restClient;
     private final String authorizationUrl;
 
+    /**
+     * [PT-BR] Construtor que injeta o builder do RestClient e a URL do serviço autorizador configurada no application.yml.
+     * [EN]    Constructor injecting the RestClient builder and the authorizer service URL from application.yml.
+     *
+     * @param restClientBuilder Builder do Spring RestClient / Spring RestClient builder
+     * @param authorizationUrl URL do serviço autorizador / Authorizer service URL
+     */
     public AuthorizationService(
             RestClient.Builder restClientBuilder,
             @Value("${picpay.services.authorization-url}") String authorizationUrl) {
@@ -24,8 +31,12 @@ public class AuthorizationService {
     }
 
     /**
-     * Consults the external authorization service before completing a transfer.
-     * Throws UnauthorizedTransactionException if authorization is denied.
+     * [PT-BR] Consulta o serviço autorizador externo via HTTP antes de efetivar uma transferência.
+     *         Lança UnauthorizedTransactionException caso a transferência seja recusada.
+     * [EN]    Consults the external authorization service via HTTP before executing a transfer.
+     *         Throws UnauthorizedTransactionException if the transfer is denied.
+     *
+     * @throws UnauthorizedTransactionException Se o autorizador negar / If the authorizer denies
      */
     public void authorize() {
         log.info("Consultando serviço autorizador externo: {}", authorizationUrl);

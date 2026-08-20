@@ -23,6 +23,13 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * [PT-BR] Endpoint para cadastrar um novo usuário (tipo COMUM ou LOJISTA).
+     * [EN]    Endpoint to register a new user (COMMON or MERCHANT type).
+     *
+     * @param request Dados de cadastro do usuário / User registration data
+     * @return Dados do usuário criado com HTTP 201 / Created user details with HTTP 201
+     */
     @PostMapping
     @Operation(summary = "Criar usuário", description = "Cria um novo usuário (comum ou lojista)")
     @ApiResponses(value = {
@@ -34,12 +41,25 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    /**
+     * [PT-BR] Endpoint para obter a lista de todos os usuários cadastrados.
+     * [EN]    Endpoint to retrieve the list of all registered users.
+     *
+     * @return Lista de usuários / List of users
+     */
     @GetMapping
     @Operation(summary = "Listar usuários", description = "Lista todos os usuários cadastrados")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    /**
+     * [PT-BR] Endpoint para buscar um usuário específico pelo seu identificador (ID).
+     * [EN]    Endpoint to find a specific user by their identifier (ID).
+     *
+     * @param id ID do usuário / User ID
+     * @return Dados do usuário encontrado / Found user details
+     */
     @GetMapping("/{id}")
     @Operation(summary = "Buscar usuário", description = "Busca um usuário pelo ID")
     @ApiResponses(value = {

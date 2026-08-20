@@ -29,16 +29,28 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
 
     /**
-     * Executes a money transfer between two users.
+     * [PT-BR] Executa a transferência de dinheiro entre dois usuários aplicando todas as regras de negócio.
+     *         Regras de Negócio:
+     *         1. Pagador e recebedor devem existir no banco.
+     *         2. Pagador não pode ser LOJISTA (MERCHANT).
+     *         3. Pagador não pode transferir para si mesmo.
+     *         4. Pagador deve possuir saldo suficiente (balance >= value).
+     *         5. A transação deve ser autorizada por serviço HTTP externo.
+     *         6. Débito e crédito são executados em transação ACID (@Transactional com rollback automático).
+     *         7. Notificação ao recebedor é despachada assincronamente via RabbitMQ.
      *
-     * Business rules:
-     * 1. Payer must exist
-     * 2. Payee must exist
-     * 3. Payer cannot be a MERCHANT
-     * 4. Payer must have sufficient balance
-     * 5. Transfer must be authorized by external service
-     * 6. Entire operation is wrapped in a DB transaction (ACID)
-     * 7. Notification is sent asynchronously via RabbitMQ
+     * [EN]    Executes money transfer between two users applying all business rules.
+     *         Business Rules:
+     *         1. Payer and payee must exist in the database.
+     *         2. Payer cannot be a MERCHANT (merchants only receive).
+     *         3. Payer cannot transfer to themselves.
+     *         4. Payer must have sufficient balance (balance >= value).
+     *         5. Transaction must be authorized by an external HTTP service.
+     *         6. Debit and credit are executed within an ACID transaction (@Transactional with automatic rollback).
+     *         7. Notification to the receiver is dispatched asynchronously via RabbitMQ.
+     *
+     * @param request Dados da requisição de transferência / Transfer request data (payer, payee, value)
+     * @return Detalhes da transação persistida / Persisted transaction details
      */
     @Transactional
     public TransferResponse executeTransfer(TransferRequest request) {
@@ -118,6 +130,12 @@ public class TransactionService {
         );
     }
 
+    /**
+     * [PT-BR] Retorna o histórico de todas as transações realizadas no sistema.
+     * [EN]    Retrieves the history of all transactions performed in the system.
+     *
+     * @return Lista de transações / List of transactions
+     */
     @Transactional(readOnly = true)
     public List<TransferResponse> getAllTransactions() {
         return transactionRepository.findAll().stream()

@@ -16,6 +16,12 @@ import java.security.cert.X509Certificate;
 @Configuration
 public class RestClientConfig {
 
+    /**
+     * [PT-BR] Customiza a fábrica de conexões do RestClient para suportar certificados SSL permissivos e timeouts de conexão/leitura (5s) em ambiente de desenvolvimento e mocks.
+     * [EN]    Customizes RestClient connection factory to support permissive SSL certificates and connection/read timeouts (5s) for dev and mock environments.
+     *
+     * @return Customizador RestClientCustomizer / RestClientCustomizer instance
+     */
     @Bean
     public RestClientCustomizer restClientCustomizer() {
         return restClientBuilder -> {

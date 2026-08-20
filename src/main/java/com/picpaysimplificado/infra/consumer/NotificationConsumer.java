@@ -17,6 +17,13 @@ public class NotificationConsumer {
     private final RestClient restClient;
     private final String notificationUrl;
 
+    /**
+     * [PT-BR] Construtor que injeta o RestClient e a URL do serviço de notificação mockado.
+     * [EN]    Constructor injecting the RestClient and the mocked notification service URL.
+     *
+     * @param restClientBuilder Builder do Spring RestClient / Spring RestClient builder
+     * @param notificationUrl URL do serviço de notificação / Notification service URL
+     */
     public NotificationConsumer(
             RestClient.Builder restClientBuilder,
             @Value("${picpay.services.notification-url}") String notificationUrl) {
@@ -25,11 +32,12 @@ public class NotificationConsumer {
     }
 
     /**
-     * Consumes notification messages from the RabbitMQ queue.
-     * Makes an HTTP POST to the external notification service.
+     * [PT-BR] Consome mensagens da fila RabbitMQ 'notification.queue' e faz requisição HTTP POST para notificar o recebedor.
+     *         Em caso de falhas temporárias na API externa, o RabbitMQ reprocessa via mecanismo de retry.
+     * [EN]    Consumes messages from RabbitMQ 'notification.queue' and performs an HTTP POST request to notify the receiver.
+     *         In case of temporary external API failures, RabbitMQ reprocesses the message via retry mechanism.
      *
-     * If the call fails, RabbitMQ will retry (up to 3 times by default)
-     * and then route to the dead letter queue.
+     * @param payload Payload da notificação recebido da fila / Notification payload received from queue
      */
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
     public void consumeNotification(NotificationPayload payload) {

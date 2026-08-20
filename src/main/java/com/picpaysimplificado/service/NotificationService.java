@@ -15,8 +15,12 @@ public class NotificationService {
     private final RabbitTemplate rabbitTemplate;
 
     /**
-     * Publishes a notification event to the RabbitMQ queue for async processing.
-     * This decouples notification delivery from the transfer transaction.
+     * [PT-BR] Publica um evento de notificação na fila do RabbitMQ para processamento assíncrono.
+     *         Desacopla o envio da notificação da transação principal de transferência.
+     * [EN]    Publishes a notification event to the RabbitMQ queue for asynchronous processing.
+     *         Decouples the notification delivery from the primary transfer transaction.
+     *
+     * @param payload Payload contendo os dados da notificação / Payload containing notification data
      */
     public void sendNotification(NotificationPayload payload) {
         log.info("Publicando notificação na fila para o usuário: {} (transação: {})",
