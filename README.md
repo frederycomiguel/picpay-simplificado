@@ -5,12 +5,13 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![CI](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/frederycomiguel/picpay-simplificado/actions)
 
 API REST de uma plataforma de pagamentos simplificada, inspirada no [desafio técnico do PicPay](https://github.com/PicPay/picpay-desafio-backend).
 
 ## 📋 Sobre o Projeto
 
-O objetivo é criar uma API que permita depositar e transferir dinheiro entre usuários, aplicando conceitos avançados de backend como transações ACID, integrações externas, mensageria assíncrona e tratamento de concorrência.
+O objetivo é criar uma API que permita depositar e transferir dinheiro entre usuários, aplicando conceitos avançados de backend como transações ACID, integrações externas, mensageria assíncrona, tratamento de concorrência e testes automatizados.
 
 ### Regras de Negócio
 
@@ -75,7 +76,7 @@ O projeto adota uma combinação de **Arquitetura em Camadas (Layered Architectu
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 🛠️ Tecnologias
+## 🛠️ Tecnologias & Stack de Qualidade
 
 | Tecnologia | Versão | Uso |
 |---|---|---|
@@ -86,6 +87,9 @@ O projeto adota uma combinação de **Arquitetura em Camadas (Layered Architectu
 | Spring Validation | — | Validação de DTOs |
 | PostgreSQL | 16 | Banco de dados relacional |
 | RabbitMQ | 3.13 | Mensageria assíncrona |
+| JUnit 5 & Mockito | — | Testes unitários e mocks de serviços |
+| AssertJ | — | Fluent assertions nos testes |
+| Spring Boot Test | — | Testes de integração de contexto e repositórios |
 | SpringDoc OpenAPI | 2.8 | Documentação Swagger UI |
 | Lombok | — | Redução de boilerplate |
 | Docker Compose | — | Orquestração de containers |
@@ -110,7 +114,14 @@ cd picpay-simplificado
 docker-compose up -d
 ```
 
-### 3. Execute a aplicação
+### 3. Execute os testes automatizados
+
+```bash
+# Executa a suite de testes unitários e de integração
+./mvnw test
+```
+
+### 4. Execute a aplicação
 
 ```bash
 ./mvnw spring-boot:run
@@ -118,7 +129,7 @@ docker-compose up -d
 
 A API estará disponível em `http://localhost:8080`
 
-### 4. Acesse a documentação
+### 5. Acesse a documentação
 
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **RabbitMQ Dashboard**: http://localhost:15672 (user: `picpay` / pass: `picpay123`)
