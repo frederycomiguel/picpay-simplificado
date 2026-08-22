@@ -11,6 +11,7 @@
     transactions: [],
     currentUserId: null,
     loginEmail: '',
+    loginPassword: '',
     loginError: '',
     loginLoading: false,
     signup: {
@@ -52,7 +53,6 @@
   }
 
   function fetchUsers() { return apiRequest('/users'); }
-  function fetchUser(id) { return apiRequest('/users/' + id); }
   function fetchTransactions() { return apiRequest('/transactions'); }
   function createUser(payload) {
     return apiRequest('/users', {
@@ -63,6 +63,13 @@
   }
   function postTransfer(payload) {
     return apiRequest('/transfer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
+  function login(payload) {
+    return apiRequest('/users/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -162,13 +169,12 @@
       '    </div>' +
       '    <div style="display:flex; flex-direction:column; gap:12px;">' +
       '      <div class="field"><label>E-mail</label><input type="email" data-field="login-email" value="' + esc(state.loginEmail) + '" placeholder="joao@email.com" /></div>' +
-      '      <div class="field"><label>Senha</label><input type="password" placeholder="••••••••" /></div>' +
+      '      <div class="field"><label>Senha</label><input type="password" data-field="login-password" value="' + esc(state.loginPassword) + '" placeholder="••••••••" /></div>' +
       (state.loginError ? '      <div class="alert alert-danger">' + esc(state.loginError) + '</div>' : '') +
       '      <button type="button" class="btn btn-primary" data-action="login-submit" ' + (state.loginLoading ? 'disabled' : '') + '>' + (state.loginLoading ? 'Entrando...' : 'Entrar') + '</button>' +
       '    </div>' +
       '    <div class="divider"><div class="line"></div><span>ou</span><div class="line"></div></div>' +
       '    <div style="text-align:center; font-size:13px; color:var(--text-dim);">Não tem conta? <span class="link-action" data-action="go-signup">Criar conta</span></div>' +
-      '    <div style="font-size:11px; color:var(--text-faint); text-align:center; line-height:1.5;">Esta API ainda não expõe autenticação — o e-mail é buscado entre os usuários cadastrados via <code>GET /users</code>.</div>' +
       '  </div>' +
       '</div>';
   }
@@ -369,6 +375,10 @@
 
   function goTo(view) { setState({ view: view }); }
 
+  function goToTransferFresh() {
+    setState({ view: 'transfer', transfer: { payeeId: '', amount: '', step: 'form', error: '', result: null } });
+  }
+
   function refreshUsersAndTransactions() {
     return Promise.all([fetchUsers(), fetchTransactions()]).then(function (results) {
       setState({ users: results[0] || [], transactions: results[1] || [] });
@@ -376,17 +386,27 @@
   }
 
   function loginSubmit() {
-    var typed = state.loginEmail.trim().toLowerCase();
-    if (!typed) {
-      setState({ loginError: 'Digite o e-mail de um usuário cadastrado.' });
+    if (!state.loginEmail.trim() || !state.loginPassword.trim()) {
+      setState({ loginError: 'Informe e-mail e senha.' });
       return;
     }
-    var match = state.users.filter(function (u) { return u.email.toLowerCase() === typed; })[0];
-    if (!match) {
-      setState({ loginError: 'E-mail não encontrado entre os usuários cadastrados.' });
-      return;
-    }
-    setState({ currentUserId: match.id, view: 'dashboard', loginEmail: '', loginError: '' });
+    setState({ loginLoading: true, loginError: '' });
+    login({ email: state.loginEmail.trim(), password: state.loginPassword })
+      .then(function (user) {
+        return refreshUsersAndTransactions().then(function () {
+          setState({
+            currentUserId: user.id,
+            view: 'dashboard',
+            loginEmail: '',
+            loginPassword: '',
+            loginLoading: false,
+            loginError: ''
+          });
+        });
+      })
+      .catch(function (err) {
+        setState({ loginLoading: false, loginError: err.message });
+      });
   }
 
   function logout() {
@@ -394,7 +414,9 @@
       currentUserId: null,
       view: 'login',
       loginEmail: '',
+      loginPassword: '',
       loginError: '',
+      loginLoading: false,
       transfer: { payeeId: '', amount: '', step: 'form', error: '', result: null },
       signup: { firstName: '', lastName: '', document: '', email: '', password: '', balance: '', userType: 'COMMON', error: '', loading: false }
     });
@@ -477,7 +499,7 @@
     if (!el) return;
     var action = el.dataset.action;
     if (action === 'go-dashboard') goTo('dashboard');
-    else if (action === 'go-transfer') goTo('transfer');
+    else if (action === 'go-transfer') goToTransferFresh();
     else if (action === 'go-users') goTo('users');
     else if (action === 'go-login') goTo('login');
     else if (action === 'go-signup') goTo('signup');
@@ -497,6 +519,7 @@
     var field = e.target.dataset.field;
     if (!field) return;
     if (field === 'login-email') { state.loginEmail = e.target.value; state.loginError = ''; }
+    else if (field === 'login-password') { state.loginPassword = e.target.value; state.loginError = ''; }
     else if (field === 'signup-firstName') state.signup.firstName = e.target.value;
     else if (field === 'signup-lastName') state.signup.lastName = e.target.value;
     else if (field === 'signup-document') state.signup.document = e.target.value;

@@ -52,6 +52,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * [PT-BR] Trata falha de login (e-mail ou senha inválidos), retornando HTTP 401 (Unauthorized).
+     * [EN]    Handles login failure (invalid email or password), returning HTTP 401 (Unauthorized).
+     *
+     * @param ex Exceção capturada / Captured exception
+     * @return Resposta JSON com status 401 / JSON response with status 401
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    /**
      * [PT-BR] Trata violações de regras de negócio (ex: lojista enviando dinheiro ou para si mesmo), retornando HTTP 403 (Forbidden).
      * [EN]    Handles business rule violations (e.g. merchant sending money or to oneself), returning HTTP 403 (Forbidden).
      *

@@ -1,5 +1,6 @@
 package com.picpaysimplificado.controller;
 
+import com.picpaysimplificado.dto.LoginRequest;
 import com.picpaysimplificado.dto.UserCreateRequest;
 import com.picpaysimplificado.dto.UserResponse;
 import com.picpaysimplificado.service.UserService;
@@ -68,5 +69,22 @@ public class UserController {
     })
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    /**
+     * [PT-BR] Endpoint para autenticar um usuário por e-mail e senha (usado pela tela de login do front-end).
+     * [EN]    Endpoint to authenticate a user by email and password (used by the front-end login screen).
+     *
+     * @param request Credenciais de login / Login credentials
+     * @return Dados do usuário autenticado / Authenticated user details
+     */
+    @PostMapping("/login")
+    @Operation(summary = "Login", description = "Autentica um usuário por e-mail e senha")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
+            @ApiResponse(responseCode = "401", description = "E-mail ou senha inválidos")
+    })
+    public ResponseEntity<UserResponse> login(@RequestBody @Valid LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 }

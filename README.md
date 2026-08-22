@@ -129,7 +129,15 @@ docker-compose up -d
 
 A API estará disponível em `http://localhost:8080`
 
-### 5. Acesse a documentação
+### 5. Acesse o front-end
+
+Uma interface web simples (HTML/CSS/JS puro, sem build) é servida pela própria aplicação Spring Boot:
+
+- **Front-end**: http://localhost:8080
+- Faça login com o e-mail e a senha de um usuário já cadastrado (veja os exemplos de `curl` abaixo) ou clique em **"Criar conta"** para cadastrar um novo usuário direto pela tela.
+- Não há sessão/token: o login (`POST /users/login`) apenas confere e-mail e senha e retorna os dados do usuário a cada tentativa.
+
+### 6. Acesse a documentação
 
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **RabbitMQ Dashboard**: http://localhost:15672 (user: `picpay` / pass: `picpay123`)
@@ -143,6 +151,7 @@ A API estará disponível em `http://localhost:8080`
 | `POST` | `/users` | Criar usuário |
 | `GET` | `/users` | Listar todos os usuários |
 | `GET` | `/users/{id}` | Buscar usuário por ID |
+| `POST` | `/users/login` | Autenticar por e-mail e senha (usado pelo front-end) |
 
 ### Transferências
 
@@ -184,6 +193,10 @@ curl -X POST http://localhost:8080/users \
     "userType": "MERCHANT"
   }'
 ```
+
+> Depois de criar esses dois usuários, acesse http://localhost:8080 e entre no front-end com:
+> - `joao@email.com` / `senha123` (comum)
+> - `loja@email.com` / `senha123` (lojista — só recebe transferências)
 
 ### Realizar transferência
 
@@ -241,6 +254,7 @@ src/main/java/com/picpaysimplificado/
 │       ├── UserRepository.java
 │       └── UserType.java
 ├── dto/
+│   ├── LoginRequest.java
 │   ├── NotificationPayload.java
 │   ├── TransferRequest.java
 │   ├── TransferResponse.java
@@ -254,6 +268,7 @@ src/main/java/com/picpaysimplificado/
 │   └── exception/
 │       ├── GlobalExceptionHandler.java
 │       ├── InsufficientBalanceException.java
+│       ├── InvalidCredentialsException.java
 │       ├── TransactionNotAllowedException.java
 │       └── UnauthorizedTransactionException.java
 └── service/
@@ -261,6 +276,11 @@ src/main/java/com/picpaysimplificado/
     ├── NotificationService.java
     ├── TransactionService.java
     └── UserService.java
+
+src/main/resources/static/   (front-end web, servido pela própria aplicação)
+├── index.html
+├── css/app.css
+└── js/app.js
 ```
 
 ## 📌 Conceitos Aplicados

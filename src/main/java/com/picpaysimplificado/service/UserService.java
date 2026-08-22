@@ -2,8 +2,10 @@ package com.picpaysimplificado.service;
 
 import com.picpaysimplificado.domain.user.User;
 import com.picpaysimplificado.domain.user.UserRepository;
+import com.picpaysimplificado.dto.LoginRequest;
 import com.picpaysimplificado.dto.UserCreateRequest;
 import com.picpaysimplificado.dto.UserResponse;
+import com.picpaysimplificado.infra.exception.InvalidCredentialsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +79,27 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
         User user = findById(id);
+        return toResponse(user);
+    }
+
+    /**
+     * [PT-BR] Autentica um usuário validando e-mail e senha. Usada pela tela de login do front-end,
+     *         já que esta API não expõe um mecanismo de sessão/token — apenas essa checagem pontual.
+     * [EN]    Authenticates a user by validating email and password. Used by the front-end login screen,
+     *         since this API exposes no session/token mechanism — just this one-off check.
+     *
+     * @param request DTO com e-mail e senha / DTO with email and password
+     * @return DTO com os dados do usuário autenticado / Authenticated user response DTO
+     */
+    @Transactional(readOnly = true)
+    public UserResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new InvalidCredentialsException("E-mail ou senha inválidos"));
+
+        if (!user.getPassword().equals(request.password())) {
+            throw new InvalidCredentialsException("E-mail ou senha inválidos");
+        }
+
         return toResponse(user);
     }
 
