@@ -22,6 +22,12 @@ spring:
     username: picpay
     password: picpay123
 
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          no-cache: true
+
 # External services (mocked)
 picpay:
   services:
