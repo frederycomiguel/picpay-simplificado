@@ -386,12 +386,27 @@
   }
 
   function loginSubmit() {
-    if (!state.loginEmail.trim() || !state.loginPassword.trim()) {
+    var email = state.loginEmail.trim();
+    var password = state.loginPassword.trim();
+    if (!email && !password) {
       setState({ loginError: 'Informe e-mail e senha.' });
       return;
     }
+    if (!email) {
+      setState({ loginError: 'Informe o e-mail.' });
+      return;
+    }
+    if (!password) {
+      setState({ loginError: 'Informe a senha.' });
+      return;
+    }
+    var knownUser = state.users.filter(function (u) { return u.email.toLowerCase() === email.toLowerCase(); })[0];
+    if (!knownUser) {
+      setState({ loginError: 'E-mail não encontrado.' });
+      return;
+    }
     setState({ loginLoading: true, loginError: '' });
-    login({ email: state.loginEmail.trim(), password: state.loginPassword })
+    login({ email: email, password: state.loginPassword })
       .then(function (user) {
         return refreshUsersAndTransactions().then(function () {
           setState({
@@ -405,7 +420,7 @@
         });
       })
       .catch(function (err) {
-        setState({ loginLoading: false, loginError: err.message });
+        setState({ loginLoading: false, loginError: 'Senha incorreta.' });
       });
   }
 
